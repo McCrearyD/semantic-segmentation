@@ -13,7 +13,10 @@ import network
 from optimizer import restore_snapshot
 from datasets import cityscapes
 from config import assert_and_infer_cfg
+from collections import namedtuple
 
+
+Args = namedtuple('Args', ['save_dir', 'arch', 'snapshot', 'dataset_cls'])
 
 def setup_net(snapshot):
     """Quickly create a network for the given snapshot.
@@ -24,16 +27,16 @@ def setup_net(snapshot):
     Returns:
         [net] -- PyTorch model.
     """
-
     cudnn.benchmark = False
     torch.cuda.empty_cache()
 
-    args = {
-        'save_dir': './save',
-        'arch': 'network.deepv3.DeepWV3Plus',
-        'snapshot': snapshot
-    }
-
+    args = Args(
+        save_dir='./save',
+        arch='network.deepv3.DeepWV3Plus',
+        snapshot=snapshot,
+	dataset_cls=cityscapes)
+    
+    assert_and_infer_cfg(args, train_mode=False)
     # get net
     net = network.get_net(args, criterion=None)
     net = torch.nn.DataParallel(net).cuda()
