@@ -44,7 +44,7 @@ def calc_tile_locations(tile_size, image_size):
     return locations
 
 
-def class_centroids_image(item, tile_size, num_classes, id2trainid):
+def class_centroids_image(item, tile_size, num_classes, id2trainid, preprocess_func=None):
     """
     For one image, calculate centroids for all classes present in image.
     item: image, image_name
@@ -55,7 +55,13 @@ def class_centroids_image(item, tile_size, num_classes, id2trainid):
     """
     image_fn, label_fn = item
     centroids = defaultdict(list)
-    mask = np.array(Image.open(label_fn))
+    if label_fn.endswith('.npz'):
+        sub = np.load(label_fn)
+        mask = sub[sub.files[0]]
+        if preprocess_func is not None:
+            mask = preprocess_func(mask)
+    else:
+        mask = np.array(Image.open(label_fn))
     image_size = mask.shape
     tile_locations = calc_tile_locations(tile_size, image_size)
 
@@ -79,7 +85,7 @@ def class_centroids_image(item, tile_size, num_classes, id2trainid):
 
 
 
-def pooled_class_centroids_all(items, num_classes, id2trainid, tile_size=1024):
+def pooled_class_centroids_all(items, num_classes, id2trainid, tile_size=1024, preprocess_func=None):
     """
     Calculate class centroids for all classes for all images for all tiles.
     items: list of (image_fn, label_fn)
@@ -94,7 +100,8 @@ def pooled_class_centroids_all(items, num_classes, id2trainid, tile_size=1024):
     class_centroids_item = partial(class_centroids_image,
                                    num_classes=num_classes,
                                    id2trainid=id2trainid,
-                                   tile_size=tile_size)
+                                   tile_size=tile_size,
+                                   preprocess_func=preprocess_func)
 
     centroids = defaultdict(list)
     new_centroids = pool.map(class_centroids_item, items)
@@ -128,13 +135,14 @@ def unpooled_class_centroids_all(items, num_classes, tile_size=1024):
     return centroids
 
 
-def class_centroids_all(items, num_classes, id2trainid, tile_size=1024):
+def class_centroids_all(items, num_classes, id2trainid, tile_size=1024, preprocess_func=None):
     """
     intermediate function to call pooled_class_centroid
     """
 
     pooled_centroids = pooled_class_centroids_all(items, num_classes,
-                                                  id2trainid, tile_size)
+                                                  id2trainid, tile_size,
+                                                  preprocess_func=preprocess_func)
     return pooled_centroids
 
 

@@ -37,6 +37,10 @@ def colorize_mask(mask):
     new_mask.putpalette(palette)
     return new_mask
 
+def preprocess_comma10k(mask):
+    # mask = np.array(colorize_mask(mask))
+    return mask
+
 def get_train_val(cv_split, all_items):
     # 90/10 train/val split, three random splits for cross validation
     # val_0 = [1,5,11,29,35,49,57,68,72,82,93,115,119,130,145,154,156,167,169,189,198]
@@ -69,7 +73,9 @@ def get_train_val(cv_split, all_items):
     #     sys.exit()
 
     s = np.round(len(all_items) * 0.9).astype(int)
+    # s = min(10, s)
     train_set = all_items[:s]
+    # val_set = all_items[s:s+10]
     val_set = all_items[s:]
     return train_set, val_set
 
@@ -91,7 +97,6 @@ def make_dataset(quality, mode, maxSkip=0, cv_split=0, hardnm=0):
 
     for it in c_items:
         item = (os.path.join(img_path, it), os.path.join(mask_path, it + '.npz'))
-        print(item)
         all_items.append(item)
     logging.info('KITTI has a total of {} images'.format(len(all_items)))
 
@@ -130,7 +135,6 @@ def make_test_dataset(quality, mode, maxSkip=0, cv_split=0):
     return items, []
 
 class KITTI(data.Dataset):
-
     def __init__(self, quality, mode, maxSkip=0, joint_transform_list=None,
                  transform=None, target_transform=None, dump_images=False,
                  class_uniform_pct=0, class_uniform_tile=0, test=False,
@@ -178,13 +182,15 @@ class KITTI(data.Dataset):
                         self.imgs,
                         num_classes,
                         id2trainid=id_to_trainid,
-                        tile_size=class_uniform_tile)
+                        tile_size=class_uniform_tile,
+                        preprocess_func=preprocess_comma10k)
                 else:
                     self.centroids = uniform.class_centroids_all(
                         self.imgs,
                         num_classes,
                         id2trainid=id_to_trainid,
-                        tile_size=class_uniform_tile)
+                        tile_size=class_uniform_tile,
+                        preprocess_func=preprocess_comma10k)
                 with open(json_fn, 'w') as outfile:
                     json.dump(self.centroids, outfile, indent=4)
 
@@ -210,7 +216,14 @@ class KITTI(data.Dataset):
         if self.mode == 'test':
             img, mask = Image.open(img_path).convert('RGB'), None
         else:
-            img, mask = Image.open(img_path).convert('RGB'), Image.open(mask_path)
+            if mask_path.endswith('.npz'):
+                # handle .npz different
+                npma = np.load(mask_path)
+                m = preprocess_comma10k(npma[npma.files[0]])
+            else:
+                m = Image.open(mask_path)
+            
+            img, mask = Image.open(img_path).convert('RGB'), m
         img_name = os.path.splitext(os.path.basename(img_path))[0]
 
         # kitti scale correction factor

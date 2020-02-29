@@ -222,7 +222,8 @@ class DeepWV3Plus(nn.Module):
         wide_resnet = torch.nn.DataParallel(wide_resnet)
         if criterion is not None:
             try:
-                checkpoint = torch.load('./pretrained_models/wider_resnet38.pth.tar', map_location='cpu')
+                checkpoint = torch.load('../models/wider_resnet38.pth.tar', map_location='cpu')
+                # checkpoint = torch.load('./pretrained_models/wider_resnet38.pth.tar', map_location='cpu')
                 wide_resnet.load_state_dict(checkpoint['state_dict'])
                 del checkpoint
             except:
