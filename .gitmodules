@@ -1,3 +1,6 @@
 [submodule "sdcnet/flownet2_pytorch"]
 	path = sdcnet/flownet2_pytorch
 	url = https://github.com/NVIDIA/flownet2-pytorch
+[submodule "comma10k"]
+	path = comma10k
+	url = https://github.com/commaai/comma10k.git
