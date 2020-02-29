@@ -16,7 +16,14 @@ from config import assert_and_infer_cfg
 from collections import namedtuple
 
 
-Args = namedtuple('Args', ['save_dir', 'arch', 'snapshot', 'dataset_cls'])
+class Args(object):
+    def __init__(self, save_dir, arch, snapshot):
+        self.save_dir = save_dir
+        self.arch = arch
+        self.snapshot = snapshot
+        self.dataset_cls = cityscapes
+
+# Args = namedtuple('Args', ['save_dir', 'arch', 'snapshot', 'dataset_cls'])
 
 def setup_net(snapshot):
     """Quickly create a network for the given snapshot.
@@ -30,11 +37,12 @@ def setup_net(snapshot):
     cudnn.benchmark = False
     torch.cuda.empty_cache()
 
-    args = Args(
-        save_dir='./save',
-        arch='network.deepv3.DeepWV3Plus',
-        snapshot=snapshot,
-	dataset_cls=cityscapes)
+    args = Args('./save', 'network.deepv3.DeepWV3Plus', snapshot)
+    #args = Args(
+        #save_dir='./save',
+        #arch='network.deepv3.DeepWV3Plus',
+        #snapshot=snapshot,
+	#dataset_cls=cityscapes)
     
     assert_and_infer_cfg(args, train_mode=False)
     # get net
