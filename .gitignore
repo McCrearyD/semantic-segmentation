@@ -16,3 +16,5 @@ dist/
 *.so
 .torch
 .DS_Store
+logs/*
+.ipynb_checkpoints/*
