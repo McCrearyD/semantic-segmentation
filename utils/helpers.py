@@ -32,7 +32,7 @@ def setup_net(snapshot):
         snapshot {string} -- Input snapshot, IE. kitti_best.pth
     
     Returns:
-        [net] -- PyTorch model.
+        [[net, transform]] -- PyTorch model & the image transform function.
     """
     cudnn.benchmark = False
     torch.cuda.empty_cache()
@@ -58,9 +58,9 @@ def setup_net(snapshot):
     mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     img_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(*mean_std)])
 
-    return net
+    return net, img_transform
 
-def predict_image(net, img, frame=None):
+def predict_image(net, img_transform, img, frame=None):
     """Using the network generated from "setup_net(...)", make a prediction on the input image.
     
     Arguments:
