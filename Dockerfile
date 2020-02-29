@@ -23,7 +23,9 @@ RUN apt-get install libgtk2.0-dev -y && rm -rf /var/lib/apt/lists/*
 # Install Apex
 RUN cd /home/ && git clone https://github.com/NVIDIA/apex.git apex && cd apex && python setup.py install --cuda_ext --cpp_ext
 
+WORKDIR /home/
 ADD requirements.txt /home/
+RUN pip install -r requirements.txt
 
 RUN git clone https://github.com/McCrearyD/semantic-segmentation.git
 RUN mkdir outputs
@@ -35,5 +37,3 @@ RUN wget "http://kurtulm.us/models/kitti_best.pth"
 RUN wget "http://kurtulm.us/models/cityscapes_best.pth"
 
 WORKDIR /home/
-
-RUN pip install -r requirements.txt
