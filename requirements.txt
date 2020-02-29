@@ -1,1 +1,2 @@
-"pillow<7"
+pillow<7
+jupyter==1.0
