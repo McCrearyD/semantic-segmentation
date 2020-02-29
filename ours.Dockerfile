@@ -22,7 +22,6 @@ RUN apt-get install libgtk2.0-dev -y && rm -rf /var/lib/apt/lists/*
 
 # Install Apex
 RUN cd /home/ && git clone https://github.com/NVIDIA/apex.git apex && cd apex && python setup.py install --cuda_ext --cpp_ext
-WORKDIR /home/
 
 ADD requirements.txt /home/
 
@@ -31,9 +30,11 @@ RUN mkdir outputs
 RUN mkdir models
 
 # our weights
-RUN cd /home/models
+WORKDIR /home/models
 RUN wget "http://kurtulm.us/models/kitti_best.pth"
 RUN wget "http://kurtulm.us/models/cityscapes_best.pth"
 RUN cd ..
 
 RUN pip install -r requirements.txt
+
+WORKDIR /home/
