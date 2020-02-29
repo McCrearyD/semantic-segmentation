@@ -33,8 +33,7 @@ RUN mkdir models
 WORKDIR /home/models
 RUN wget "http://kurtulm.us/models/kitti_best.pth"
 RUN wget "http://kurtulm.us/models/cityscapes_best.pth"
-RUN cd ..
-
-RUN pip install -r requirements.txt
 
 WORKDIR /home/
+
+RUN pip install -r requirements.txt
