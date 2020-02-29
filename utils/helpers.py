@@ -75,8 +75,10 @@ def predict_image(net, img_transform, img, frame=None):
     """
 
     img_tensor = img_transform(img)
-    img = img_tensor.unsqueeze(0).cuda()
-    pred = net(img)
+
+    with torch.no_grad():
+	    img = img_tensor.unsqueeze(0).cuda()
+	    pred = net(img)
 
     pred = pred.cpu().numpy().squeeze()
     pred = np.argmax(pred, axis=0)
@@ -110,23 +112,22 @@ def predict_video(net, input_path, output_path, verbose=True, every_nth_frame=No
     out_video = cv2.VideoWriter(input_path, fourcc, 30.0, (int(cap.get(3)),int(cap.get(4))))
 
     # predict
-    with torch.no_grad():
-        i = 0
-        while(cap.isOpened()):
-            ret, frame = cap.read()
-            if ret == True:
-                i += 1
-                
-                if every_nth_frame is not None and i % every_nth_frame != 0:
-                    continue
+    i = 0
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret == True:
+            i += 1
+            
+            if every_nth_frame is not None and i % every_nth_frame != 0:
+                continue
 
-                # predict & write to output buffer
-                seg_frame = predict_image(frame, i)
-                out_video.write(cv2.cvtColor(seg_frame, cv2.COLOR_RGB2BGR))
-            else:
-                break
-            if verbose:
-                print('Frame %i' % i)
+            # predict & write to output buffer
+            seg_frame = predict_image(frame, i)
+            out_video.write(cv2.cvtColor(seg_frame, cv2.COLOR_RGB2BGR))
+        else:
+            break
+        if verbose:
+            print('Frame %i' % i)
     if verbose:
         print('Finished.')
     cap.release()
