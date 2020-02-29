@@ -38,11 +38,6 @@ def setup_net(snapshot):
     torch.cuda.empty_cache()
 
     args = Args('./save', 'network.deepv3.DeepWV3Plus', snapshot)
-    #args = Args(
-        #save_dir='./save',
-        #arch='network.deepv3.DeepWV3Plus',
-        #snapshot=snapshot,
-	#dataset_cls=cityscapes)
     
     assert_and_infer_cfg(args, train_mode=False)
     # get net
@@ -58,9 +53,9 @@ def setup_net(snapshot):
     mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     img_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(*mean_std)])
 
-    return net, img_transform
+    return net, img_transform, args
 
-def predict_image(net, img_transform, img, frame=None):
+def predict_image(net, img_transform, args, img, frame=None):
     """Using the network generated from "setup_net(...)", make a prediction on the input image.
     
     Arguments:
