@@ -1,2 +1,14 @@
 pillow<7
 jupyter==1.0
+numpy
+sklearn
+h5py
+scikit-image
+piexif
+cffi
+tqdm
+dominate
+tensorboardX
+opencv-python
+nose
+ninja
