@@ -135,7 +135,7 @@ if args.test_mode:
     args.max_epoch = 2
 
 if 'WORLD_SIZE' in os.environ and args.apex:
-    args.apex = int(os.environ['WORLD_SIZE']) > 1
+    args.apex = int(os.environ['WORLD_SIZE']) > 0
     args.world_size = int(os.environ['WORLD_SIZE'])
     print("Total world size: ", int(os.environ['WORLD_SIZE']))
 
