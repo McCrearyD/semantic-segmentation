@@ -21,3 +21,5 @@ RUN pip install -r requirements.txt
 
 RUN mkdir semantic-segmentation
 ADD ./ /home/semantic-segmentation
+
+RUN echo 'echo "#### (1) Command for running the jupyter notebook: jupyter-notebook --port 8080 --ip 0.0.0.0 --allow-root"' >> /root/.bashrc
