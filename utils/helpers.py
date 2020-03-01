@@ -166,7 +166,8 @@ def predict_video(net, img_transform, args, input_path, output_path, verbose=Tru
             s += '\tETA: %.1fm' % (frames_left * average / 60)
             print(s, end=ret)
     if verbose:
-        print('Finished.')
+        print('Finished.', end='\r')
+        print()
         
     cap.release()
     out_video_mask.release()
