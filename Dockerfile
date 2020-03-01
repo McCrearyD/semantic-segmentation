@@ -19,4 +19,5 @@ WORKDIR /home/
 ADD requirements.txt /home/
 RUN pip install -r requirements.txt
 
+RUN mkdir semantic-segmentation
 ADD ./ /home/semantic-segmentation
