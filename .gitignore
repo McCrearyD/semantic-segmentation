@@ -18,3 +18,8 @@ dist/
 .DS_Store
 logs/*
 .ipynb_checkpoints/*
+comma10k/*
+comma10k_kitti/*
+comma10k_backup/*
+images/*
+*.pth
