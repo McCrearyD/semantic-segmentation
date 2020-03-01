@@ -32,7 +32,7 @@ def setup_net(snapshot):
         snapshot {string} -- Input snapshot, IE. kitti_best.pth
     
     Returns:
-        [[net, transform]] -- PyTorch model & the image transform function.
+        [net, transform] -- PyTorch model & the image transform function.
     """
     cudnn.benchmark = False
     torch.cuda.empty_cache()
@@ -55,15 +55,17 @@ def setup_net(snapshot):
 
     return net, img_transform, args
 
-def predict_image(net, img_transform, args, img, frame=None):
+def predict_image(net, img_transform, args, img):
     """Using the network generated from "setup_net(...)", make a prediction on the input image.
     
     Arguments:
-        net {[pytorch model]} -- Ideally the network generated from "setup_net(...)".
-        img {[numpy.array]} -- Input image.
+        net {pytorch model} -- Ideally the network generated from "setup_net(...)".
+        img_transform {transform} -- Output from setup_net.
+        args {Args} -- Arguments for the network from setup_net.
+        img {numpy.array} -- Input image.
     
     Keyword Arguments:
-        frame {[type]} -- [description] (default: {None})
+        frame {type} -- [description] (default: {None})
     
     Returns:
         [np.array, np.array] -- Colorized & non-colorized predictions resepectively.
@@ -83,17 +85,17 @@ def predict_image(net, img_transform, args, img, frame=None):
 
     colorized = cityscapes.colorize_mask(pred)
 
-    out_path = 'output_video_frame_%i.png' % frame if frame is not None else 'output_image.png'
-
     o = np.array(colorized.convert('RGB'))
     o = o[:, :, ::-1].copy()
     return o, pred
 
-def predict_video(net, input_path, output_path, verbose=True, every_nth_frame=None):
+def predict_video(net, img_transform, args, input_path, output_path, verbose=True, every_nth_frame=None):
     """Using the network generated from "setup_net(...)", make a prediction on the input video.
     
     Arguments:
         net {pytorch model} -- Ideally the network generated from "setup_net(...)".
+        img_transform {transform} -- Output from setup_net.
+        args {Args} -- Arguments for the network from setup_net.
         input_path {type} -- Path to input video.
         output_path {type} -- Path to output video.
     
@@ -104,26 +106,52 @@ def predict_video(net, input_path, output_path, verbose=True, every_nth_frame=No
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     cap = cv2.VideoCapture(input_path)
-    out_video = cv2.VideoWriter(input_path, fourcc, 30.0, (int(cap.get(3)),int(cap.get(4))))
 
-    # predict
+    if output_path.endswith('.mp4'):
+        output_path = output_path[:-4] # shave off end
+
+    # create 2 buffers for our mask & overlay output videos
+    out_video_mask = cv2.VideoWriter(output_path + '_mask.mp4', fourcc, 30.0, (int(cap.get(3)),int(cap.get(4))))
+    out_video_mask_overlay = cv2.VideoWriter(output_path + '_overlaid.mp4', fourcc, 30.0, (int(cap.get(3)),int(cap.get(4))))
+
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    if verbose:
+        print('Running inference on video with path: %s' % input_path)
+        print('Frames in video: %i ' % (frame_count))
+        print('Total frames to be processed: %i ' % (frame_count / (1 if every_nth_frame is None else every_nth_frame)))
+
     i = 0
-    while(cap.isOpened()):
+    while True:
         ret, frame = cap.read()
-        if ret == True:
-            i += 1
-            
-            if every_nth_frame is not None and i % every_nth_frame != 0:
-                continue
 
-            # predict & write to output buffer
-            seg_frame = predict_image(frame, i)
-            out_video.write(cv2.cvtColor(seg_frame, cv2.COLOR_RGB2BGR))
-        else:
+        if not ret:
             break
+
+        i += 1
+        
+        if every_nth_frame is not None and i % every_nth_frame != 0:
+            continue
+
+        # predict & write to output buffer
+        seg_frame_colorized, seg_frame_gray = predict_image(net, img_transform, args, frame)
+        seg_frame_colorized = cv2.cvtColor(seg_frame_colorized, cv2.COLOR_RGB2BGR)
+
+        background = Image.fromarray(frame)
+        foreground = Image.fromarray(seg_frame_colorized)
+        foreground.putalpha(128)
+        background.paste(foreground, (0, 0), foreground)
+        background = cv2.cvtColor(np.array(background), cv2.COLOR_RGB2BGR)
+
+        # write to both output buffers
+        out_video_mask.write(seg_frame_colorized) # just the mask
+        out_video_mask_overlay.write(background) # mask with the overlay
+
         if verbose:
-            print('Frame %i' % i)
+            print('Frame %i/%i' % (i, frame_count))
     if verbose:
         print('Finished.')
+        
     cap.release()
-    out_video.release()
+    out_video_mask.release()
+    out_video_mask_overlay.release()
