@@ -156,6 +156,7 @@ def predict_video(net, img_transform, args, input_path, output_path, verbose=Tru
 
         if verbose:
             if i > 1:
+                print(end='\r')
                 ret = '\r'
             else:
                 ret = ''
