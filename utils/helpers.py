@@ -14,6 +14,7 @@ from optimizer import restore_snapshot
 from datasets import cityscapes
 from config import assert_and_infer_cfg
 from collections import namedtuple
+from time import time
 
 
 class Args(object):
@@ -115,13 +116,17 @@ def predict_video(net, img_transform, args, input_path, output_path, verbose=Tru
     out_video_mask_overlay = cv2.VideoWriter(output_path + '_overlaid.mp4', fourcc, 30.0, (int(cap.get(3)),int(cap.get(4))))
 
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    total_process_frames = (frame_count / (1 if every_nth_frame is None else every_nth_frame))
 
     if verbose:
         print('Running inference on video with path: %s' % input_path)
         print('Frames in video: %i ' % (frame_count))
-        print('Total frames to be processed: %i ' % (frame_count / (1 if every_nth_frame is None else every_nth_frame)))
+        print('Total frames to be processed: %i ' % total_process_frames)
+        print()
 
     i = 0
+    c = 0
+    start = time()
     while True:
         ret, frame = cap.read()
 
@@ -132,6 +137,8 @@ def predict_video(net, img_transform, args, input_path, output_path, verbose=Tru
         
         if every_nth_frame is not None and i % every_nth_frame != 0:
             continue
+
+        c += 1
 
         # predict & write to output buffer
         seg_frame_colorized, seg_frame_gray = predict_image(net, img_transform, args, frame)
@@ -148,7 +155,16 @@ def predict_video(net, img_transform, args, input_path, output_path, verbose=Tru
         out_video_mask_overlay.write(background) # mask with the overlay
 
         if verbose:
-            print('Frame %i/%i' % (i, frame_count))
+            if i > 1:
+                ret = '\r'
+            else:
+                ret = ''
+            average = (time() - start) / c
+            frames_left = total_process_frames - c
+            s = 'Frame %i/%i' % (i, frame_count)
+            s += '\tAverage Inference: %.3fs' % average
+            s += '\tETA: %.1fm' % (frames_left * average / 60)
+            print(s, end=ret)
     if verbose:
         print('Finished.')
         
