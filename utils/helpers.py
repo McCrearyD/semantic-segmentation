@@ -66,7 +66,7 @@ def predict_image(net, img_transform, args, img, frame=None):
         frame {[type]} -- [description] (default: {None})
     
     Returns:
-        [type] -- [description]
+        [np.array, np.array] -- Colorized & non-colorized predictions resepectively.
     """
 
     img_tensor = img_transform(img)
@@ -87,7 +87,7 @@ def predict_image(net, img_transform, args, img, frame=None):
 
     o = np.array(colorized.convert('RGB'))
     o = o[:, :, ::-1].copy()
-    return o
+    return o, pred
 
 def predict_video(net, input_path, output_path, verbose=True, every_nth_frame=None):
     """Using the network generated from "setup_net(...)", make a prediction on the input video.
