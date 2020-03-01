@@ -1,3 +1,14 @@
+# Comma Hackathon Semantic-Segmentation
+
+### How to setup:
+- Build the docker container: `sudo docker build -t segsem .`
+- Run the docker container: `sudo docker run --shm-size {ALLOCATE_MEMORY_BITES} -it -p 8080:8080 --gpus all segsem`
+    - Optionally, you can mount a volume to the docker container for live code changes: `sudo docker run --shm-size {ALLOCATE_MEMORY_BITES} -v /path/to/semantic-segmentation:/home/semantic-segmentation -it -p 8080:8080 --gpus all segsem`
+
+
+
+
+
 # Improving Semantic Segmentation via Video Prediction and Label Relaxation
 ### [Project](https://nv-adlr.github.io/publication/2018-Segmentation) | [Paper](https://arxiv.org/pdf/1812.01593.pdf) | [YouTube](https://www.youtube.com/watch?v=aEbXjGZDZSQ)  | [Cityscapes Score](https://www.cityscapes-dataset.com/anonymous-results/?id=555fc2b66c6e00b953c72b98b100e396c37274e0788e871a85f1b7b4f4fa130e) | [Kitti Score](http://www.cvlibs.net/datasets/kitti/eval_semseg_detail.php?benchmark=semantics2015&result=83cac7efbd41b1f2fc095f9bc1168bc548b48885) <br>
 PyTorch implementation of our CVPR2019 paper (oral) on achieving state-of-the-art semantic segmentation results using Deeplabv3-Plus like architecture with a WideResNet38 trunk. We present a video prediction-based methodology to scale up training sets by synthesizing new training samples and propose a novel label relaxation technique to make training objectives robust to label noise. <br>
