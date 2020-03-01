@@ -6,7 +6,8 @@ RUN mkdir models
 WORKDIR /home/models
 RUN wget "http://kurtulm.us/models/kitti_best.pth" \
     && wget "http://kurtulm.us/models/cityscapes_best.pth" \
-    && wget "http://kurtulm.us/models/wider_resnet38.pth.tar"
+    && wget "http://kurtulm.us/models/wider_resnet38.pth.tar" \
+    && wget "http://kurtulm.us/models/camvid_best.pth"
 WORKDIR /home/
 
 RUN apt-get update
